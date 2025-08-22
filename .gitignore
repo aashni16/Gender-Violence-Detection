@@ -1,0 +1,9 @@
+data/ 
+models/ 
+venv*/ 
+__pycache__/ 
+*.csv 
+*.joblib 
+*.log 
+.vscode/ 
+.DS_Store 
