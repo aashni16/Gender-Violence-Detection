@@ -20,17 +20,19 @@ def train_and_save(label_col: str, out_name: str):
                                   min_df=3, max_df=0.9, sublinear_tf=True)),
         ("clf", LinearSVC(class_weight="balanced", C=1.0, random_state=42))
     ])
+
     pipe.fit(X_train, y_train)
-    pred = pipe.predict(X_test)
+    y_pred = pipe.predict(X_test)
 
     print(f"\n=== {label_col} ===")
-    print(classification_report(y_test, pred, digits=4))
-    print("Confusion matrix:\n", confusion_matrix(y_test, pred))
+    print(classification_report(y_test, y_pred, digits=4))
+    print("Confusion matrix:\n", confusion_matrix(y_test, y_pred))
 
-    # AUC via decision_function
+    # AUC from decision scores (binary)
     try:
         scores = pipe.decision_function(X_test)
-        if scores.ndim > 1: scores = scores[:,1]
+        if scores.ndim > 1:  # safety
+            scores = scores[:, 1]
         print("ROC-AUC:", round(roc_auc_score(y_test, scores), 4))
     except Exception:
         pass
@@ -40,8 +42,9 @@ def train_and_save(label_col: str, out_name: str):
     print("Saved ->", path)
 
 def main():
-    train_and_save("gv_label", "gv_clf")         # gender-violence
-    train_and_save("offense_label", "offense_clf")  # general offensive
+    # Train both classic models
+    train_and_save("gv_label", "gv_clf")            # gender-violence
+    train_and_save("offense_label", "offense_clf")  # offensive
 
 if __name__ == "__main__":
     main()
