@@ -1,0 +1,46 @@
+name: CI - Demo Run
+
+on:
+  workflow_dispatch: {}    # manual trigger from the Actions tab
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Show repo files
+        run: ls -R .
+
+      - name: Quick inference (single text)
+        run: |
+          python infer.py --text "She reported being assaulted at the event" --output demo_single_out.txt || echo "Single-text inference failed"
+
+      - name: CSV inference (if sample_texts.csv is present)
+        run: |
+          if [ -f sample_texts.csv ]; then
+            python infer.py --input sample_texts.csv --output demo_predictions.csv || echo "CSV inference failed"
+          else
+            echo "sample_texts.csv not found"
+          fi
+
+      - name: Upload inference outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-output
+          path: |
+            demo_single_out.txt
+            demo_predictions.csv
